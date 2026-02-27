@@ -1,16 +1,35 @@
-# chat_flugo_test
+# Chat Teste Flugo
 
-A new Flutter project.
+## Desenvolvido em Flutter com utilização de persistência de dados em Firebase
 
-## Getting Started
+Para rodar o projeto localmente deve-se adicionar as credenciais que enviei para a recrutadora pois por motivos de segurança as adicionei ao .gitignore. Essas credenciais devem ser adicionadas a pasta:
 
-This project is a starting point for a Flutter application.
+> ./android/app
 
-A few resources to get you started if this is your first Flutter project:
+> O nome do arquivo é google-services.json
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Para download das dependências e rodar o projeto dentro de um emulador ou dispositivo conectado é só rodar:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+> flutter clean
+
+> flutter pub get
+
+> flutter run
+
+Para o build do APK deve usar o comando:
+
+> flutter build apk
+
+O arquivo de saída ficará no local:
+
+> ./build/app/outputs/flutter-apk/app-realease.apk
+
+Dentro do banco no Firebase configurei dois usuários se comunicando em apenas um chat. Esses usuários podem ser acessados pelas credenciais:
+
+> adriano.franca@gmail.com
+
+> franca.adriano@gmail.com
+
+ A senha é padrão para os dois usuários:
+
+ > Senha: Senha123
