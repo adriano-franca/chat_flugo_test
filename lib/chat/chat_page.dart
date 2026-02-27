@@ -12,8 +12,16 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   final messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   final databaseRef = FirebaseDatabase.instance.ref("messages");
   final user = FirebaseAuth.instance.currentUser;
+
+  @override
+  void dispose() {
+    messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   void sendMessage() {
     if (messageController.text.trim().isEmpty) return;
@@ -35,6 +43,24 @@ class _ChatPageState extends State<ChatPage> {
       context,
       MaterialPageRoute(builder: (_) => const LoginPage()),
     );
+  }
+
+  String formatTime(dynamic timestamp) {
+    if (timestamp == null) return "";
+    final date = DateTime.fromMillisecondsSinceEpoch(timestamp as int);
+    final hours = date.hour.toString().padLeft(2, '0');
+    final minutes = date.minute.toString().padLeft(2, '0');
+    return "$hours:$minutes";
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   @override
@@ -65,7 +91,6 @@ class _ChatPageState extends State<ChatPage> {
           IconButton(
             icon: const Icon(Icons.logout, color: textColor),
             onPressed: logout,
-            tooltip: 'Sair',
           ),
         ],
       ),
@@ -94,7 +119,12 @@ class _ChatPageState extends State<ChatPage> {
                         a.value["timestamp"].compareTo(b.value["timestamp"]),
                   );
 
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _scrollToBottom();
+                });
+
                 return ListView.builder(
+                  controller: _scrollController,
                   padding: const EdgeInsets.symmetric(
                     vertical: 20,
                     horizontal: 16,
@@ -103,6 +133,10 @@ class _ChatPageState extends State<ChatPage> {
                   itemBuilder: (context, index) {
                     final message = messages[index].value;
                     final isMe = message["userId"] == user!.uid;
+
+                    final String email = message["email"] ?? "";
+                    final String username = email.split('@').first;
+                    final String timeStr = formatTime(message["timestamp"]);
 
                     return Align(
                       alignment: isMe
@@ -114,21 +148,46 @@ class _ChatPageState extends State<ChatPage> {
                         ),
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 16,
+                          vertical: 10,
+                          horizontal: 14,
                         ),
                         decoration: BoxDecoration(
                           color: isMe ? indeedBlue : Colors.white,
                           borderRadius: BorderRadius.circular(8),
                           border: isMe ? null : Border.all(color: borderColor),
                         ),
-                        child: Text(
-                          message["text"],
-                          style: TextStyle(
-                            fontSize: 15,
-                            height: 1.4,
-                            color: isMe ? Colors.white : textColor,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: isMe
+                              ? CrossAxisAlignment.end
+                              : CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              username,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: isMe ? Colors.white70 : indeedBlue,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              message["text"],
+                              style: TextStyle(
+                                fontSize: 15,
+                                height: 1.4,
+                                color: isMe ? Colors.white : textColor,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              timeStr,
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: isMe ? Colors.white70 : Colors.black54,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -137,7 +196,6 @@ class _ChatPageState extends State<ChatPage> {
               },
             ),
           ),
-
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: const BoxDecoration(
